@@ -5,12 +5,13 @@ Comprehensive [Effect](https://effect.website) v4 skills and smart context injec
 ## Install
 
 ```bash
+# Pi (extension + skills)
 pi install https://github.com/joelhooks/effectts-skills
-```
 
-For just the skills (no extension), use the [Agent Skills](https://agentskills.io) CLI:
+# Claude Code (plugin + skills)
+npx plugins add joelhooks/effectts-skills
 
-```bash
+# Just the skills (any agent)
 npx skills add joelhooks/effectts-skills
 ```
 
