@@ -245,6 +245,36 @@ Effect.runPromise(main)
 - No hidden dependencies
 - Simpler refactoring
 
+## Layer.provide vs Layer.provideMerge vs Layer.mergeAll
+
+This causes most Effect type errors. Know the difference:
+
+| Method | Deps Satisfied | Available to Program | Use When |
+|--------|---------------|---------------------|----------|
+| `Layer.provide` | Yes | No | Internal layer building (hide implementation detail) |
+| `Layer.provideMerge` | Yes | Yes | Tests needing multiple services, incremental composition |
+| `Layer.mergeAll` | No | Yes | Combining independent layers at the same level |
+
+```typescript
+// Layer.provide: satisfies deps, hides the provider
+const internal = MyService.layer.pipe(Layer.provide(DatabaseLayer))
+// Result: Layer<MyService> (Database NOT available to program)
+
+// Layer.provideMerge: satisfies deps AND keeps provider accessible
+const test = MyService.layer.pipe(Layer.provideMerge(DatabaseLayer))
+// Result: Layer<MyService | Database> (both available)
+
+// Layer.mergeAll: combines without resolving deps
+const combined = Layer.mergeAll(UserRepo.layer, OrderRepo.layer)
+// Result: Layer<UserRepo | OrderRepo, never, SharedDeps> (deps still required)
+```
+
+**Common error to recognize:**
+```
+Effect<A, E, SomeService> is not assignable to Effect<A, E, never>
+```
+This means `SomeService` is still required. Use `provideMerge` instead of `provide`.
+
 ## Layer Memoization
 
 Effect memoizes layers by reference identity. The same layer instance used multiple times is constructed only once.

@@ -271,11 +271,13 @@ const program = fetchData.pipe(
 
 Load these as needed for deeper patterns:
 
-- **[Services & Layers](references/services-and-layers.md)**: ServiceMap.Service, service-driven development, test layers, layer memoization, layer composition
+- **[Services & Layers](references/services-and-layers.md)**: ServiceMap.Service, service-driven development, test layers, layer memoization, provide vs provideMerge
 - **[Data Modeling](references/data-modeling.md)**: Schema.Class, branded types, variants, Match.valueTags, JSON encoding
-- **[Error Handling](references/error-handling.md)**: Schema.TaggedErrorClass, catch/catchTag/catchTags, defects, Schema.Defect
-- **[Testing](references/testing.md)**: @effect/vitest setup, it.effect/it.live/it.layer, TestClock, worked example
+- **[Schema Decisions](references/schema-decisions.md)**: Schema.Class vs Struct vs TaggedClass decision flowchart, migration patterns
+- **[Error Handling](references/error-handling.md)**: Schema.TaggedErrorClass, catch/catchTag/catchTags, defects, Schema.Defect, TypeId/refail patterns
+- **[Testing](references/testing.md)**: @effect/vitest setup, it.effect/it.live/it.layer, TestClock, Effect.flip, FiberRef isolation, worked example
 - **[HTTP Clients](references/http-clients.md)**: HttpClient, request building, response decoding, middleware, retries, typed API service
 - **[CLI](references/cli.md)**: Command.make, Arguments, Flags, subcommands, worked task manager example
 - **[Config](references/config.md)**: Config module, schema validation, ConfigProvider, Redacted, config layers
+- **[Processes & Scopes](references/processes.md)**: Fork types, Scope.extend, Command for child processes, killable background tasks
 - **[Setup](references/setup.md)**: tsconfig, Effect Language Service, project structure, module settings

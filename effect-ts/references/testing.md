@@ -343,6 +343,55 @@ describe("Events.register", () => {
 })
 ```
 
+## Testing Errors with Effect.flip
+
+Swap the success/error channels to assert on errors:
+
+```typescript
+it.effect("rejects invalid input", () =>
+  Effect.gen(function* () {
+    const service = yield* MyService
+    const error = yield* service.process(badInput).pipe(Effect.flip)
+    expect(error._tag).toBe("ValidationError")
+  }).pipe(Effect.provide(testLayer))
+)
+```
+
+## Test Isolation with FiberRef
+
+Avoid mutating `process.env` in parallel tests. Use FiberRef for fiber-local overrides:
+
+```typescript
+import { Effect, FiberRef } from "effect"
+
+// In your module
+const ConfigOverride = FiberRef.unsafeMake<string | undefined>(undefined)
+
+const getConfig = Effect.gen(function* () {
+  const override = yield* FiberRef.get(ConfigOverride)
+  if (override !== undefined) return override
+  return process.env.MY_CONFIG ?? "/default/path"
+})
+
+// In tests: fiber-local, safe for parallel execution
+it.effect("works with custom config", () =>
+  Effect.gen(function* () {
+    const result = yield* myEffect
+    expect(result).toBe(expected)
+  }).pipe(
+    Effect.locally(ConfigOverride, "/test/path"), // scoped to this fiber
+    Effect.provide(TestLayer),
+  )
+)
+```
+
+**Why FiberRef over process.env mutation:**
+- Fiber-local (parallel test safe)
+- Auto-cleanup (no finally block needed)
+- Type-safe
+
+Patterns adapted from [artimath/effect-skills](https://github.com/artimath/effect-skills) (MIT).
+
 ## Running Tests
 
 ```bash

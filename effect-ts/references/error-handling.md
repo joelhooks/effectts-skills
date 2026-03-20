@@ -162,3 +162,66 @@ const fetchUser = (id: string) =>
 - Result is serializable for network/storage
 
 **Use for:** wrapping external library errors, network boundaries, persisting errors to DB, logging systems.
+
+## Advanced Patterns
+
+### TypeId Branding (from Effect core packages)
+
+Brand error families with a TypeId symbol for runtime type discrimination across package boundaries:
+
+```typescript
+import { hasProperty, isTagged } from "effect/Predicate"
+import { Schema } from "effect"
+
+export const TypeId: unique symbol = Symbol.for("@myapp/AppError")
+export type TypeId = typeof TypeId
+
+export class NotFoundError extends Schema.TaggedErrorClass("NotFoundError")(
+  "NotFoundError",
+  { resource: Schema.String, id: Schema.String }
+) {
+  readonly [TypeId] = TypeId
+
+  static is(u: unknown): u is NotFoundError {
+    return hasProperty(u, TypeId) && isTagged(u, "NotFoundError")
+  }
+}
+```
+
+### Static refail Helper (from @effect/cluster)
+
+Create a static method that maps any error into your domain error:
+
+```typescript
+import { Cause, Effect, Schema } from "effect"
+
+class PersistenceError extends Schema.TaggedErrorClass("PersistenceError")(
+  "PersistenceError",
+  { cause: Schema.Defect }
+) {
+  static refail<A, E, R>(
+    effect: Effect.Effect<A, E, R>
+  ): Effect.Effect<A, PersistenceError, R> {
+    return Effect.catchAllCause(effect, (cause) =>
+      Effect.fail(new PersistenceError({ cause: Cause.squash(cause) }))
+    )
+  }
+}
+
+// Usage: wrap any database call
+const safeQuery = PersistenceError.refail(rawDbCall)
+```
+
+### Effect.flip (Swap Success/Error for Testing)
+
+```typescript
+it.effect("should fail on invalid input", () =>
+  Effect.gen(function* () {
+    const service = yield* MyService
+    const error = yield* service.doThing(badInput).pipe(Effect.flip)
+    expect(error._tag).toBe("ValidationError")
+  }).pipe(Effect.provide(TestLayer))
+)
+```
+
+Patterns adapted from [artimath/effect-skills](https://github.com/artimath/effect-skills) (MIT).
